@@ -1,0 +1,25 @@
+{
+	"schemaVersion": 1,
+	"id": "infiniteparkour",
+	"version": "${version}",
+	"name": "Infinite Parkour",
+	"description": "A procedurally generated block jumping game for Minecraft.",
+	"authors": [
+		"haykam821"
+	],
+	"contact": {
+		"homepage": "https://github.com/haykam821/Infinite-Parkour#readme",
+		"issues": "https://github.com/haykam821/Infinite-Parkour/issues"
+	},
+	"entrypoints": {
+		"main": [
+			"io.github.haykam821.infiniteparkour.InfiniteParkour"
+		]
+	},
+	"license": "MIT",
+	"depends": {
+		"fabricloader": ">=0.4.0",
+		"plasmid": ">=0.5.0",
+		"java": ">=17"
+	}
+}

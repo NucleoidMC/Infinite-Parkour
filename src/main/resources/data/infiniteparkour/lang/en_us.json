@@ -1,0 +1,6 @@
+{
+	"game.infiniteparkour.snowcapped_infinite_parkour": "Infinite Parkour: Snowcapped",
+	"gameType.infiniteparkour.infinite_parkour": "Infinite Parkour",
+	"text.infiniteparkour.reached_score": "%s reached a score of %d jumps!",
+	"text.infiniteparkour.template_load_failed": "Failed to load the map template"
+}
