@@ -1,4 +1,5 @@
 {
 	"type": "infiniteparkour:infinite_parkour",
-	"map": "infiniteparkour:snowcapped"
+	"map": "infiniteparkour:snowcapped",
+	"statistic_bundle_namespace": "infinite_parkour"
 }

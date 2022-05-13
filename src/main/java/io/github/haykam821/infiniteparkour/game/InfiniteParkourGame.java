@@ -29,6 +29,9 @@ import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
 import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
 import xyz.nucleoid.plasmid.game.rule.GameRuleType;
+import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
+import xyz.nucleoid.plasmid.game.stats.StatisticKeys;
+import xyz.nucleoid.plasmid.game.stats.StatisticMap;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
@@ -37,6 +40,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 	private final ServerWorld world;
 	private final InfiniteParkourMap map;
 	private final InfiniteParkourConfig config;
+	private final GameStatisticBundle statistics;
 
 	private final EvictingQueue<ParkourPiece> pieces;
 	private ParkourPiece lastPiece = null;
@@ -53,6 +57,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		this.world = world;
 		this.map = map;
 		this.config = config;
+		this.statistics = config.getStatisticBundle(gameSpace);
 
 		this.pieces = EvictingQueue.create(config.maxPieceHistorySize());
 
@@ -182,6 +187,15 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 	}
 
 	private void addNextPiece() {
+		if (this.statistics != null) {
+			StatisticMap map = this.statistics.forPlayer(this.mainPlayer);
+
+			map.increment(StatisticKeys.POINTS, 1);
+			if (this.score == 0) {
+				map.increment(StatisticKeys.GAMES_PLAYED, 1);
+			}
+		}
+
 		this.score += 1;
 		this.mainPlayer.setExperienceLevel(this.score);
 
