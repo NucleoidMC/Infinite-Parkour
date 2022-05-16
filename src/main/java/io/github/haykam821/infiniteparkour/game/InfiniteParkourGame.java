@@ -24,6 +24,7 @@ import xyz.nucleoid.plasmid.game.GameCloseReason;
 import xyz.nucleoid.plasmid.game.GameOpenContext;
 import xyz.nucleoid.plasmid.game.GameOpenProcedure;
 import xyz.nucleoid.plasmid.game.GameSpace;
+import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
 import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
 import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
 import xyz.nucleoid.plasmid.game.player.PlayerOffer;
@@ -41,6 +42,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 	private final InfiniteParkourMap map;
 	private final InfiniteParkourConfig config;
 	private final GameStatisticBundle statistics;
+	private final ScoreBar bar;
 
 	private final EvictingQueue<ParkourPiece> pieces;
 	private ParkourPiece lastPiece = null;
@@ -52,12 +54,13 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 
 	private int ticksUntilClose = -1;
 
-	public InfiniteParkourGame(GameSpace gameSpace, ServerWorld world, InfiniteParkourMap map, InfiniteParkourConfig config) {
+	public InfiniteParkourGame(GameSpace gameSpace, ServerWorld world, InfiniteParkourMap map, InfiniteParkourConfig config, GlobalWidgets widgets) {
 		this.gameSpace = gameSpace;
 		this.world = world;
 		this.map = map;
 		this.config = config;
 		this.statistics = config.getStatisticBundle(gameSpace);
+		this.bar = new ScoreBar(this, widgets);
 
 		this.pieces = EvictingQueue.create(config.maxPieceHistorySize());
 
@@ -96,7 +99,9 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 			.setGenerator(map.createGenerator(context.server()));
 
 		return context.openWithWorld(worldConfig, (activity, world) -> {
-			InfiniteParkourGame phase = new InfiniteParkourGame(activity.getGameSpace(), world, map, config);
+			GlobalWidgets widgets = GlobalWidgets.addTo(activity);
+
+			InfiniteParkourGame phase = new InfiniteParkourGame(activity.getGameSpace(), world, map, config, widgets);
 			InfiniteParkourGame.setRules(activity);
 
 			// Listeners
@@ -198,6 +203,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 
 		this.score += 1;
 		this.mainPlayer.setExperienceLevel(this.score);
+		this.bar.updateTitle();
 
 		int deltaY = this.lastPiece == null ? 0 : this.nextPiece.getDeltaY(this.lastPiece);
 		this.sendSound(this.config.soundConfig().nextPiece(), this.config.soundConfig().pitch() + deltaY * this.config.soundConfig().nextPiecePitchVariance());
@@ -226,5 +232,9 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		this.gameSpace.getPlayers().sendMessage(message);
 
 		this.sendSound(this.config.soundConfig().gameEnd());
+	}
+
+	public int getScore() {
+		return this.score;
 	}
 }
