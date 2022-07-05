@@ -1,0 +1,11 @@
+{
+	"game.infiniteparkour.hill_fort_infinite_parkour": "Бесконечный паркур: Острог",
+	"game.infiniteparkour.snowcapped_infinite_parkour": "Бесконечный паркур: Снежный покров",
+	"game.infiniteparkour.stronghold_infinite_parkour": "Бесконечный паркур: Крепость",
+	"game.infiniteparkour.weathered_wave_infinite_parkour": "Бесконечный паркур: Окисление",
+	"gameType.infiniteparkour.infinite_parkour": "Бесконечный паркур",
+	"statistic.bundle.infinite_parkour": "Бесконечный паркур",
+	"text.infiniteparkour.bar.title": "%s — Прыжков: %d",
+	"text.infiniteparkour.reached_score": "%s получил %d очков за прыжки!",
+	"text.infiniteparkour.template_load_failed": "Не удалось загрузить шаблон карты"
+}
