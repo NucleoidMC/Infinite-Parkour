@@ -1,9 +1,8 @@
 package io.github.haykam821.infiniteparkour.game.piece;
 
-import java.util.Random;
-
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Util;
+import net.minecraft.util.math.random.Random;
 
 public final class ParkourBlockColor {
 	private static final DyeColor[] COLORS = DyeColor.values();

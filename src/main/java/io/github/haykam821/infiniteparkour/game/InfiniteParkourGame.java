@@ -12,7 +12,6 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
-import net.minecraft.text.TranslatableText;
 import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
@@ -228,7 +227,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 			piece.placeGlass(this.world);
 		}
 
-		Text message = new TranslatableText("text.infiniteparkour.reached_score", this.mainPlayer.getDisplayName(), this.score).formatted(Formatting.GOLD);
+		Text message = Text.translatable("text.infiniteparkour.reached_score", this.mainPlayer.getDisplayName(), this.score).formatted(Formatting.GOLD);
 		this.gameSpace.getPlayers().sendMessage(message);
 
 		this.sendSound(this.config.soundConfig().gameEnd());
