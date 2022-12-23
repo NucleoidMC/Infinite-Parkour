@@ -8,7 +8,6 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import net.minecraft.util.math.Vec3f;
 import xyz.nucleoid.plasmid.game.GameSpace;
 import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
 
@@ -27,7 +26,7 @@ public record InfiniteParkourConfig(
 		return instance.group(
 			Identifier.CODEC.fieldOf("map").forGetter(InfiniteParkourConfig::map),
 			SoundConfig.CODEC.optionalFieldOf("sounds", SoundConfig.DEFAULT).forGetter(InfiniteParkourConfig::soundConfig),
-			Vec3f.CODEC.xmap(Vec3d::new, Vec3f::new).optionalFieldOf("spectator_spawn_offset", new Vec3d(0, 2, 0)).forGetter(InfiniteParkourConfig::spectatorSpawnOffset),
+			Vec3d.CODEC.optionalFieldOf("spectator_spawn_offset", new Vec3d(0, 2, 0)).forGetter(InfiniteParkourConfig::spectatorSpawnOffset),
 			Codec.intRange(0, Integer.MAX_VALUE).optionalFieldOf("ticks_until_close", 20 * 10).forGetter(InfiniteParkourConfig::ticksUntilClose),
 			Codec.intRange(0, Integer.MAX_VALUE).optionalFieldOf("max_piece_history_size", 500).forGetter(InfiniteParkourConfig::maxPieceHistorySize),
 			Codec.intRange(Integer.MIN_VALUE, 0).optionalFieldOf("failure_padding", 3).forGetter(InfiniteParkourConfig::failurePadding),
