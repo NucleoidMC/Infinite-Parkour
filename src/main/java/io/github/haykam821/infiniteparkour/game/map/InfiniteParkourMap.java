@@ -33,7 +33,7 @@ public class InfiniteParkourMap {
 
 	private final TemplateRegion spawn;
 	private final TemplateRegion start;
-	private final Box exit;
+	private Box exit;
 
 	public InfiniteParkourMap(MapTemplate template) {
 		this.template = template;
@@ -88,6 +88,8 @@ public class InfiniteParkourMap {
 				world.setBlockState(pos, ParkourPiece.AIR);
 			}
 		}
+
+		this.exit = null;
 	}
 
 	public ChunkGenerator createGenerator(MinecraftServer server) {
