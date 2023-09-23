@@ -137,7 +137,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 
 		Completion completion = this.nextPieces.getCompletion(this.mainPlayer, this.config);
 		if (completion instanceof Completion.Complete complete) {
-			this.addNextPiece(complete.piece());
+			this.addNextPiece(complete.piece(), this.config.trackSkippedScore() ? complete.score() : 1);
 		} else if (completion instanceof Completion.Failed) {
 			this.endGame();
 		}
@@ -192,17 +192,17 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		this.sendSound(sound, this.config.soundConfig().pitch());
 	}
 
-	private void addNextPiece(ParkourPiece completedPiece) {
+	private void addNextPiece(ParkourPiece completedPiece, int score) {
 		if (this.statistics != null) {
 			StatisticMap map = this.statistics.forPlayer(this.mainPlayer);
 
-			map.increment(StatisticKeys.POINTS, 1);
+			map.increment(StatisticKeys.POINTS, score);
 			if (this.score == 0) {
 				map.increment(StatisticKeys.GAMES_PLAYED, 1);
 			}
 		}
 
-		this.score += 1;
+		this.score += score;
 		this.mainPlayer.setExperienceLevel(this.score);
 		this.bar.updateTitle();
 

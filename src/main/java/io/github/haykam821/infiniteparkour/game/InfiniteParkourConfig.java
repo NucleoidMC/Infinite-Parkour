@@ -19,6 +19,7 @@ public record InfiniteParkourConfig(
 	int nextPiecesSize,
 	int maxPieceHistorySize,
 	int failurePadding,
+	boolean trackSkippedScore,
 	double maxAngleVariance,
 	Optional<Double> pieceOffsetRadius,
 	Optional<String> statisticBundleNamespace
@@ -32,6 +33,7 @@ public record InfiniteParkourConfig(
 			Codec.intRange(0, Integer.MAX_VALUE).optionalFieldOf("next_pieces_size", 2).forGetter(InfiniteParkourConfig::nextPiecesSize),
 			Codec.intRange(0, Integer.MAX_VALUE).optionalFieldOf("max_piece_history_size", 500).forGetter(InfiniteParkourConfig::maxPieceHistorySize),
 			Codec.intRange(Integer.MIN_VALUE, 0).optionalFieldOf("failure_padding", 3).forGetter(InfiniteParkourConfig::failurePadding),
+			Codec.BOOL.optionalFieldOf("track_skipped_score", false).forGetter(InfiniteParkourConfig::trackSkippedScore),
 			Codec.doubleRange(0, Math.PI).optionalFieldOf("max_angle_variance", 30d * MathHelper.RADIANS_PER_DEGREE).forGetter(InfiniteParkourConfig::maxAngleVariance),
 			Codec.doubleRange(0, Integer.MAX_VALUE).optionalFieldOf("piece_offset_radius").forGetter(InfiniteParkourConfig::pieceOffsetRadius),
 			Codec.STRING.optionalFieldOf("statistic_bundle_namespace").forGetter(InfiniteParkourConfig::statisticBundleNamespace)

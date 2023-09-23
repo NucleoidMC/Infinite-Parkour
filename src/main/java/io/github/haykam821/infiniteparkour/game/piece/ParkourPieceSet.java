@@ -61,13 +61,15 @@ public class ParkourPieceSet {
 
 	public Completion getCompletion(ServerPlayerEntity player, InfiniteParkourConfig config) {
 		int minY = Integer.MAX_VALUE;
+		int score = 1;
 
 		for (ParkourPiece piece : this.pieces) {
 			if (piece.isCompleted(player, config)) {
-				return new Completion.Complete(piece);
+				return new Completion.Complete(piece, score);
 			}
 	
 			minY = Math.min(minY, piece.getPos().getY());
+			score += 1;
 		}
 
 		if (player.getY() < minY - config.failurePadding()) {

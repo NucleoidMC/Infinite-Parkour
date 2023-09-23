@@ -10,10 +10,10 @@ public sealed interface Completion {
 		}
 	}
 
-	public record Complete(ParkourPiece piece) implements Completion {
+	public record Complete(ParkourPiece piece, int score) implements Completion {
 		@Override
 		public String toString() {
-			return "Completed " + this.piece;
+			return "Completed " + this.piece + " (" + this.score + ")";
 		}
 	}
 
