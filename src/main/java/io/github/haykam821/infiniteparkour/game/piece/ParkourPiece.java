@@ -47,14 +47,12 @@ public class ParkourPiece {
 		world.setBlockState(this.pos, state);
 	}
 
-	public Completion getCompletion(ServerPlayerEntity player, InfiniteParkourConfig config) {
-		if (player.getY() < this.pos.getY() - config.failurePadding()) {
-			return Completion.FAILED;
-		} else if (player.isOnGround() && this.completionBox.intersects(player.getBoundingBox())) {
-			return Completion.COMPLETE;
-		} else {
-			return Completion.INCOMPLETE;
-		}
+	protected BlockPos getPos() {
+		return this.pos;
+	}
+
+	protected boolean isCompleted(ServerPlayerEntity player, InfiniteParkourConfig config) {
+		return player.isOnGround() && this.completionBox.intersects(player.getBoundingBox());
 	}
 
 	private boolean isDeltaOutOfWorld(int deltaY, ServerWorld world) {

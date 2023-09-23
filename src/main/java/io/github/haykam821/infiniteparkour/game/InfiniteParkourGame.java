@@ -6,6 +6,7 @@ import io.github.haykam821.infiniteparkour.game.map.InfiniteParkourMap;
 import io.github.haykam821.infiniteparkour.game.map.InfiniteParkourMapBuilder;
 import io.github.haykam821.infiniteparkour.game.piece.Completion;
 import io.github.haykam821.infiniteparkour.game.piece.ParkourPiece;
+import io.github.haykam821.infiniteparkour.game.piece.ParkourPieceSet;
 import net.minecraft.entity.damage.DamageSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.server.world.ServerWorld;
@@ -45,7 +46,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 
 	private final EvictingQueue<ParkourPiece> pieces;
 	private ParkourPiece lastPiece = null;
-	private ParkourPiece nextPiece = null;
+	private final ParkourPieceSet nextPieces;
 
 	private ServerPlayerEntity mainPlayer;
 	private DyeColor color = null;
@@ -62,9 +63,10 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		this.bar = new ScoreBar(this, widgets);
 
 		this.pieces = EvictingQueue.create(config.maxPieceHistorySize());
+		this.nextPieces = new ParkourPieceSet(this.config.nextPiecesSize());
 
-		this.nextPiece = this.map.createStartPiece(this.color, this.world.getRandom());
-		this.nextPiece.placeWool(this.world);
+		ParkourPiece startPiece = this.map.createStartPiece(this.color, this.world.getRandom());
+		this.nextPieces.placeInitialPieces(startPiece, this.world, this.color, this.config);
 	}
 
 	public static void setRules(GameActivity activity) {
@@ -133,10 +135,10 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 			return;
 		}
 
-		Completion completion = this.nextPiece.getCompletion(this.mainPlayer, this.config);
-		if (completion == Completion.COMPLETE) {
-			this.addNextPiece();
-		} else if (completion == Completion.FAILED) {
+		Completion completion = this.nextPieces.getCompletion(this.mainPlayer, this.config);
+		if (completion instanceof Completion.Complete complete) {
+			this.addNextPiece(complete.piece());
+		} else if (completion instanceof Completion.Failed) {
 			this.endGame();
 		}
 	}
@@ -190,7 +192,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		this.sendSound(sound, this.config.soundConfig().pitch());
 	}
 
-	private void addNextPiece() {
+	private void addNextPiece(ParkourPiece completedPiece) {
 		if (this.statistics != null) {
 			StatisticMap map = this.statistics.forPlayer(this.mainPlayer);
 
@@ -204,7 +206,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		this.mainPlayer.setExperienceLevel(this.score);
 		this.bar.updateTitle();
 
-		int deltaY = this.lastPiece == null ? 0 : this.nextPiece.getDeltaY(this.lastPiece);
+		int deltaY = this.lastPiece == null ? 0 : completedPiece.getDeltaY(this.lastPiece);
 		this.sendSound(this.config.soundConfig().nextPiece(), this.config.soundConfig().pitch() + deltaY * this.config.soundConfig().nextPiecePitchVariance());
 
 		if (this.lastPiece == null) {
@@ -213,10 +215,9 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 			this.lastPiece.destroy(this.world);
 			this.pieces.add(this.lastPiece);
 		}
-		this.lastPiece = this.nextPiece;
+		this.lastPiece = completedPiece;
 
-		this.nextPiece = this.lastPiece.createNextPiece(this.world, this.color, this.config);
-		this.nextPiece.placeWool(this.world);
+		this.nextPieces.updateCompletedPieces(completedPiece, this.world, this.color, this.config);
 	}
 
 	private void endGame() {
