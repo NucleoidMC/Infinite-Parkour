@@ -90,6 +90,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		activity.deny(GameRuleType.THROW_ITEMS);
 		activity.deny(GameRuleType.TRIDENTS_LOYAL_IN_VOID);
 		activity.deny(GameRuleType.UNSTABLE_TNT);
+		activity.deny(GameRuleType.USE_BLOCKS);
 	}
 
 	public static GameOpenProcedure open(GameOpenContext<InfiniteParkourConfig> context) {
