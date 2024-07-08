@@ -36,7 +36,7 @@ public record InfiniteParkourConfig(
 			Codec.BOOL.optionalFieldOf("track_skipped_score", false).forGetter(InfiniteParkourConfig::trackSkippedScore),
 			Codec.doubleRange(0, Math.PI).optionalFieldOf("max_angle_variance", 30d * MathHelper.RADIANS_PER_DEGREE).forGetter(InfiniteParkourConfig::maxAngleVariance),
 			Codec.doubleRange(0, Integer.MAX_VALUE).optionalFieldOf("piece_offset_radius").forGetter(InfiniteParkourConfig::pieceOffsetRadius),
-			Codec.STRING.optionalFieldOf("statistic_bundle_namespace").forGetter(InfiniteParkourConfig::statisticBundleNamespace)
+			GameStatisticBundle.NAMESPACE_CODEC.optionalFieldOf("statistic_bundle_namespace").forGetter(InfiniteParkourConfig::statisticBundleNamespace)
 		).apply(instance, InfiniteParkourConfig::new);
 	});
 
