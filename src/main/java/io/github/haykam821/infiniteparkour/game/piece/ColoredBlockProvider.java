@@ -5,7 +5,7 @@ import java.util.function.Function;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.util.DyeColor;
-import xyz.nucleoid.plasmid.util.ColoredBlocks;
+import xyz.nucleoid.plasmid.api.util.ColoredBlocks;
 
 @FunctionalInterface
 public interface ColoredBlockProvider {

@@ -57,7 +57,7 @@ public class ParkourPiece {
 
 	private boolean isDeltaOutOfWorld(int deltaY, ServerWorld world) {
 		if (deltaY < 0 && this.pos.getY() == world.getBottomY()) return true;
-		if (deltaY > 0 && this.pos.getY() == world.getTopY()) return true;
+		if (deltaY > 0 && this.pos.getY() == world.getTopYInclusive()) return true;
 
 		return false;
 	}
