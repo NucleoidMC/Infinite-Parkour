@@ -13,30 +13,32 @@ import net.minecraft.server.world.ServerWorld;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.DyeColor;
 import net.minecraft.util.Formatting;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.world.GameMode;
 import xyz.nucleoid.fantasy.RuntimeWorldConfig;
-import xyz.nucleoid.plasmid.game.GameActivity;
-import xyz.nucleoid.plasmid.game.GameCloseReason;
-import xyz.nucleoid.plasmid.game.GameOpenContext;
-import xyz.nucleoid.plasmid.game.GameOpenProcedure;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.common.GlobalWidgets;
-import xyz.nucleoid.plasmid.game.event.GameActivityEvents;
-import xyz.nucleoid.plasmid.game.event.GamePlayerEvents;
-import xyz.nucleoid.plasmid.game.player.PlayerOffer;
-import xyz.nucleoid.plasmid.game.player.PlayerOfferResult;
-import xyz.nucleoid.plasmid.game.rule.GameRuleType;
-import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
-import xyz.nucleoid.plasmid.game.stats.StatisticKeys;
-import xyz.nucleoid.plasmid.game.stats.StatisticMap;
+import xyz.nucleoid.plasmid.api.game.GameActivity;
+import xyz.nucleoid.plasmid.api.game.GameCloseReason;
+import xyz.nucleoid.plasmid.api.game.GameOpenContext;
+import xyz.nucleoid.plasmid.api.game.GameOpenProcedure;
+import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
+import xyz.nucleoid.plasmid.api.game.event.GameActivityEvents;
+import xyz.nucleoid.plasmid.api.game.event.GamePlayerEvents;
+import xyz.nucleoid.plasmid.api.game.player.JoinAcceptor;
+import xyz.nucleoid.plasmid.api.game.player.JoinAcceptorResult;
+import xyz.nucleoid.plasmid.api.game.player.JoinOffer;
+import xyz.nucleoid.plasmid.api.game.player.JoinOfferResult;
+import xyz.nucleoid.plasmid.api.game.rule.GameRuleType;
+import xyz.nucleoid.plasmid.api.game.stats.GameStatisticBundle;
+import xyz.nucleoid.plasmid.api.game.stats.StatisticKeys;
+import xyz.nucleoid.plasmid.api.game.stats.StatisticMap;
+import xyz.nucleoid.stimuli.event.EventResult;
 import xyz.nucleoid.stimuli.event.player.PlayerDamageEvent;
 import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
-public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerEvents.Remove, GamePlayerEvents.Offer, PlayerDamageEvent, PlayerDeathEvent {
+public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerEvents.Remove, GamePlayerEvents.Accept, GamePlayerEvents.Offer, PlayerDamageEvent, PlayerDeathEvent {
 	private final GameSpace gameSpace;
 	private final ServerWorld world;
 	private final InfiniteParkourMap map;
@@ -108,6 +110,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 
 			// Listeners
 			activity.listen(GameActivityEvents.TICK, phase);
+			activity.listen(GamePlayerEvents.ACCEPT, phase);
 			activity.listen(GamePlayerEvents.OFFER, phase);
 			activity.listen(PlayerDamageEvent.EVENT, phase);
 			activity.listen(PlayerDeathEvent.EVENT, phase);
@@ -145,36 +148,41 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 	}
 
 	@Override
-	public PlayerOfferResult onOfferPlayer(PlayerOffer offer) {
+	public JoinAcceptorResult onAcceptPlayers(JoinAcceptor acceptor) {
 		if (this.mainPlayer == null) {
-			return offer.accept(this.world, this.map.getSpawnPos()).and(() -> {
-				this.mainPlayer = offer.player();
-				offer.player().setYaw(this.map.getSpawnAngle());
+			return acceptor.teleport(this.world, this.map.getSpawnPos()).thenRunForEach(player -> {
+				this.mainPlayer = player;
+				player.setYaw(this.map.getSpawnAngle());
 
-				offer.player().changeGameMode(GameMode.ADVENTURE);
+				player.changeGameMode(GameMode.ADVENTURE);
 			});
 		} else {
 			Vec3d pos = this.mainPlayer.getPos().add(this.config.spectatorSpawnOffset());
-			return offer.accept(this.world, pos).and(() -> {
-				offer.player().setYaw(this.mainPlayer.getYaw());
-				offer.player().setPitch(this.mainPlayer.getPitch());
+			return acceptor.teleport(this.world, pos).thenRunForEach(player -> {
+				player.setYaw(this.mainPlayer.getYaw());
+				player.setPitch(this.mainPlayer.getPitch());
 
-				offer.player().changeGameMode(GameMode.SPECTATOR);
+				player.changeGameMode(GameMode.SPECTATOR);
 			});
 		}
 	}
 
 	@Override
-	public ActionResult onDamage(ServerPlayerEntity player, DamageSource source, float damage) {
-		return ActionResult.FAIL;
+	public JoinOfferResult onOfferPlayers(JoinOffer offer) {
+		return this.mainPlayer == null ? offer.acceptParticipants() : offer.acceptSpectators();
 	}
 
 	@Override
-	public ActionResult onDeath(ServerPlayerEntity player, DamageSource source) {
+	public EventResult onDamage(ServerPlayerEntity player, DamageSource source, float damage) {
+		return EventResult.DENY;
+	}
+
+	@Override
+	public EventResult onDeath(ServerPlayerEntity player, DamageSource source) {
 		if (player == this.mainPlayer) {
 			this.endGame();
 		}
-		return ActionResult.FAIL;
+		return EventResult.DENY;
 	}
 
 	@Override

@@ -7,7 +7,7 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.text.Text;
 import xyz.nucleoid.map_templates.MapTemplate;
 import xyz.nucleoid.map_templates.MapTemplateSerializer;
-import xyz.nucleoid.plasmid.game.GameOpenException;
+import xyz.nucleoid.plasmid.api.game.GameOpenException;
 
 public class InfiniteParkourMapBuilder {
 	private final InfiniteParkourConfig config;

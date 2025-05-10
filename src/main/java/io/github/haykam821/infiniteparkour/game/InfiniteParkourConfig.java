@@ -3,13 +3,14 @@ package io.github.haykam821.infiniteparkour.game;
 import java.util.Optional;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.MapCodec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
-import xyz.nucleoid.plasmid.game.GameSpace;
-import xyz.nucleoid.plasmid.game.stats.GameStatisticBundle;
+import xyz.nucleoid.plasmid.api.game.GameSpace;
+import xyz.nucleoid.plasmid.api.game.stats.GameStatisticBundle;
 
 public record InfiniteParkourConfig(
 	Identifier map,
@@ -24,7 +25,7 @@ public record InfiniteParkourConfig(
 	Optional<Double> pieceOffsetRadius,
 	Optional<String> statisticBundleNamespace
 ) {
-	public static final Codec<InfiniteParkourConfig> CODEC = RecordCodecBuilder.create(instance -> {
+	public static final MapCodec<InfiniteParkourConfig> CODEC = RecordCodecBuilder.mapCodec(instance -> {
 		return instance.group(
 			Identifier.CODEC.fieldOf("map").forGetter(InfiniteParkourConfig::map),
 			SoundConfig.CODEC.optionalFieldOf("sounds", SoundConfig.DEFAULT).forGetter(InfiniteParkourConfig::soundConfig),
