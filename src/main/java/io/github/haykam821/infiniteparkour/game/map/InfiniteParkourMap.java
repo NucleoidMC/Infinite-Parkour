@@ -107,6 +107,6 @@ public class InfiniteParkourMap {
 			return 0;
 		}
 
-		return data.getFloat(FACING_KEY);
+		return data.getFloat(FACING_KEY, 0);
 	}
 }
