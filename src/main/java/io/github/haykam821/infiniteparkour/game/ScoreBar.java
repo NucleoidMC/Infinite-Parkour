@@ -1,17 +1,17 @@
 package io.github.haykam821.infiniteparkour.game;
 
-import net.minecraft.entity.boss.BossBar;
-import net.minecraft.text.Text;
-import net.minecraft.util.Formatting;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.BossEvent;
 import xyz.nucleoid.plasmid.api.game.common.GlobalWidgets;
 import xyz.nucleoid.plasmid.api.game.common.widget.BossBarWidget;
 
 public final class ScoreBar {
-	private static final BossBar.Color COLOR = BossBar.Color.YELLOW;
-	private static final BossBar.Style STYLE = BossBar.Style.PROGRESS;
+	private static final BossEvent.BossBarColor COLOR = BossEvent.BossBarColor.YELLOW;
+	private static final BossEvent.BossBarOverlay STYLE = BossEvent.BossBarOverlay.PROGRESS;
 
-	private static final Text NAME = Text.translatable("gameType.infiniteparkour.infinite_parkour");
-	private static final Formatting FORMATTING = Formatting.YELLOW;
+	private static final Component NAME = Component.translatable("gameType.infiniteparkour.infinite_parkour");
+	private static final ChatFormatting FORMATTING = ChatFormatting.YELLOW;
 
 	private final InfiniteParkourGame game;
 	private final BossBarWidget widget;
@@ -25,8 +25,8 @@ public final class ScoreBar {
 		this.widget.setTitle(this.getTitle());
 	}
 
-	private Text getTitle() {
+	private Component getTitle() {
 		int score = this.game.getScore();
-		return Text.translatable("text.infiniteparkour.bar.title", NAME, score).formatted(FORMATTING);
+		return Component.translatable("text.infiniteparkour.bar.title", NAME, score).withStyle(FORMATTING);
 	}
 }

@@ -3,11 +3,10 @@ package io.github.haykam821.infiniteparkour.game.piece;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.item.DyeColor;
 import io.github.haykam821.infiniteparkour.game.InfiniteParkourConfig;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.DyeColor;
 
 public class ParkourPieceSet {
 	private final int size;
@@ -18,7 +17,7 @@ public class ParkourPieceSet {
 		this.pieces = new ArrayList<>(size);
 	}
 
-	public void placeInitialPieces(ParkourPiece piece, ServerWorld world, DyeColor color, InfiniteParkourConfig config) {
+	public void placeInitialPieces(ParkourPiece piece, ServerLevel world, DyeColor color, InfiniteParkourConfig config) {
 		ParkourPiece lastPiece = piece;
 
 		while (this.pieces.size() < this.size) {
@@ -29,7 +28,7 @@ public class ParkourPieceSet {
 		}
 	}
 
-	public void updateCompletedPieces(ParkourPiece completedPiece, ServerWorld world, DyeColor color, InfiniteParkourConfig config) {
+	public void updateCompletedPieces(ParkourPiece completedPiece, ServerLevel world, DyeColor color, InfiniteParkourConfig config) {
 		Iterator<ParkourPiece> iterator = this.pieces.iterator();
 
 		while (iterator.hasNext()) {
@@ -59,7 +58,7 @@ public class ParkourPieceSet {
 		}
 	}
 
-	public Completion getCompletion(ServerPlayerEntity player, InfiniteParkourConfig config) {
+	public Completion getCompletion(ServerPlayer player, InfiniteParkourConfig config) {
 		int minY = Integer.MAX_VALUE;
 		int score = 1;
 

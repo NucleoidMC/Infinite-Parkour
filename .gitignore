@@ -36,5 +36,7 @@ bin/
 build/
 src/main/generated/
 
+.idea/
+
 .classpath
 .DS_Store

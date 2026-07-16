@@ -1,63 +1,63 @@
 package io.github.haykam821.infiniteparkour.game.piece;
 
 import io.github.haykam821.infiniteparkour.game.InfiniteParkourConfig;
-import net.minecraft.block.BlockState;
-import net.minecraft.block.Blocks;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.math.BlockPos;
-import net.minecraft.util.math.Box;
-import net.minecraft.util.math.MathHelper;
-import net.minecraft.util.math.random.Random;
+import net.minecraft.core.BlockPos;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.util.Mth;
+import net.minecraft.util.RandomSource;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.block.Blocks;
+import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 
 public class ParkourPiece {
-	public static final BlockState AIR = Blocks.AIR.getDefaultState();
+	public static final BlockState AIR = Blocks.AIR.defaultBlockState();
 
 	private final BlockPos pos;
 	private final double angle;
-	private final Box completionBox;
+	private final AABB completionBox;
 
 	private final DyeColor color;
-	private final Random random;
+	private final RandomSource random;
 
-	public ParkourPiece(BlockPos pos, double angle, DyeColor color, Random random) {
+	public ParkourPiece(BlockPos pos, double angle, DyeColor color, RandomSource random) {
 		this.pos = pos;
 		this.angle = angle;
-		this.completionBox = new Box(pos.up(2));
+		this.completionBox = new AABB(pos.above(2));
 
 		this.color = ParkourBlockColor.getOrPickColor(color, random);
 		this.random = random;
 	}
 
-	public void placeWool(ServerWorld world) {
+	public void placeWool(ServerLevel world) {
 		this.place(world, ColoredBlockProvider.WOOL);
 	}
 
-	public void placeGlass(ServerWorld world) {
+	public void placeGlass(ServerLevel world) {
 		this.place(world, ColoredBlockProvider.GLASS);
 	}
 
-	public void destroy(ServerWorld world) {
-		world.setBlockState(this.pos, AIR);
+	public void destroy(ServerLevel world) {
+		world.setBlockAndUpdate(this.pos, AIR);
 	}
 
-	private void place(ServerWorld world, ColoredBlockProvider provider) {
+	private void place(ServerLevel world, ColoredBlockProvider provider) {
 		BlockState state = provider.forColor(this.color);
-		world.setBlockState(this.pos, state);
+		world.setBlockAndUpdate(this.pos, state);
 	}
 
 	protected BlockPos getPos() {
 		return this.pos;
 	}
 
-	protected boolean isCompleted(ServerPlayerEntity player, InfiniteParkourConfig config) {
-		return player.isOnGround() && this.completionBox.intersects(player.getBoundingBox());
+	protected boolean isCompleted(ServerPlayer player, InfiniteParkourConfig config) {
+		return player.onGround() && this.completionBox.intersects(player.getBoundingBox());
 	}
 
-	private boolean isDeltaOutOfWorld(int deltaY, ServerWorld world) {
-		if (deltaY < 0 && this.pos.getY() == world.getBottomY()) return true;
-		if (deltaY > 0 && this.pos.getY() == world.getTopYInclusive()) return true;
+	private boolean isDeltaOutOfWorld(int deltaY, ServerLevel world) {
+		if (deltaY < 0 && this.pos.getY() == world.getMinY()) return true;
+		if (deltaY > 0 && this.pos.getY() == world.getMaxY()) return true;
 
 		return false;
 	}
@@ -68,25 +68,25 @@ public class ParkourPiece {
 
 	private double getRadius(int deltaY, InfiniteParkourConfig config) {
 		return config.pieceOffsetRadius().orElseGet(() -> {
-			return MathHelper.nextDouble(this.random, 3, 5 - deltaY);
+			return Mth.nextDouble(this.random, 3, 5 - deltaY);
 		});
 	}
 
-	public ParkourPiece createNextPiece(ServerWorld world, DyeColor color, InfiniteParkourConfig config) {
-		int deltaY = MathHelper.nextInt(this.random, -1, 1);
+	public ParkourPiece createNextPiece(ServerLevel world, DyeColor color, InfiniteParkourConfig config) {
+		int deltaY = Mth.nextInt(this.random, -1, 1);
 		if (this.isDeltaOutOfWorld(deltaY, world)) {
 			deltaY = 0;
 		}
 
 		double radius = this.getRadius(deltaY, config);
 
-		double deltaAngle = MathHelper.nextDouble(random, -config.maxAngleVariance(), config.maxAngleVariance());
+		double deltaAngle = Mth.nextDouble(random, -config.maxAngleVariance(), config.maxAngleVariance());
 		double angle = this.angle + deltaAngle;
 
 		int deltaX = (int) (radius * Math.cos(angle));
 		int deltaZ = (int) (radius * Math.sin(angle));
 
-		BlockPos pos = this.pos.add(deltaX, deltaY, deltaZ);
+		BlockPos pos = this.pos.offset(deltaX, deltaY, deltaZ);
 		return new ParkourPiece(pos, angle, color, this.random);
 	}
 }

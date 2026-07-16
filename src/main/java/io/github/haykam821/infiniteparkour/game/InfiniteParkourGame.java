@@ -7,17 +7,17 @@ import io.github.haykam821.infiniteparkour.game.map.InfiniteParkourMapBuilder;
 import io.github.haykam821.infiniteparkour.game.piece.Completion;
 import io.github.haykam821.infiniteparkour.game.piece.ParkourPiece;
 import io.github.haykam821.infiniteparkour.game.piece.ParkourPieceSet;
-import net.minecraft.entity.damage.DamageSource;
-import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.server.world.ServerWorld;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
-import net.minecraft.text.Text;
-import net.minecraft.util.DyeColor;
-import net.minecraft.util.Formatting;
-import net.minecraft.util.math.Vec3d;
-import net.minecraft.world.GameMode;
-import xyz.nucleoid.fantasy.RuntimeWorldConfig;
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.sounds.SoundEvent;
+import net.minecraft.sounds.SoundSource;
+import net.minecraft.world.damagesource.DamageSource;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.level.GameType;
+import net.minecraft.world.phys.Vec3;
+import xyz.nucleoid.fantasy.RuntimeLevelConfig;
 import xyz.nucleoid.plasmid.api.game.GameActivity;
 import xyz.nucleoid.plasmid.api.game.GameCloseReason;
 import xyz.nucleoid.plasmid.api.game.GameOpenContext;
@@ -40,7 +40,7 @@ import xyz.nucleoid.stimuli.event.player.PlayerDeathEvent;
 
 public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerEvents.Remove, GamePlayerEvents.Accept, GamePlayerEvents.Offer, PlayerDamageEvent, PlayerDeathEvent {
 	private final GameSpace gameSpace;
-	private final ServerWorld world;
+	private final ServerLevel world;
 	private final InfiniteParkourMap map;
 	private final InfiniteParkourConfig config;
 	private final GameStatisticBundle statistics;
@@ -50,13 +50,13 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 	private ParkourPiece lastPiece = null;
 	private final ParkourPieceSet nextPieces;
 
-	private ServerPlayerEntity mainPlayer;
+	private ServerPlayer mainPlayer;
 	private DyeColor color = null;
 	private int score = 0;
 
 	private int ticksUntilClose = -1;
 
-	public InfiniteParkourGame(GameSpace gameSpace, ServerWorld world, InfiniteParkourMap map, InfiniteParkourConfig config, GlobalWidgets widgets) {
+	public InfiniteParkourGame(GameSpace gameSpace, ServerLevel world, InfiniteParkourMap map, InfiniteParkourConfig config, GlobalWidgets widgets) {
 		this.gameSpace = gameSpace;
 		this.world = world;
 		this.map = map;
@@ -99,10 +99,10 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		InfiniteParkourConfig config = context.config();
 		InfiniteParkourMap map = new InfiniteParkourMapBuilder(config).create(context.server());
 
-		RuntimeWorldConfig worldConfig = new RuntimeWorldConfig()
+		RuntimeLevelConfig worldConfig = new RuntimeLevelConfig()
 			.setGenerator(map.createGenerator(context.server()));
 
-		return context.openWithWorld(worldConfig, (activity, world) -> {
+		return context.openWithLevel(worldConfig, (activity, world) -> {
 			GlobalWidgets widgets = GlobalWidgets.addTo(activity);
 
 			InfiniteParkourGame phase = new InfiniteParkourGame(activity.getGameSpace(), world, map, config, widgets);
@@ -152,17 +152,17 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		if (this.mainPlayer == null) {
 			return acceptor.teleport(this.world, this.map.getSpawnPos()).thenRunForEach(player -> {
 				this.mainPlayer = player;
-				player.setYaw(this.map.getSpawnAngle());
+				player.setYRot(this.map.getSpawnAngle());
 
-				player.changeGameMode(GameMode.ADVENTURE);
+				player.setGameMode(GameType.ADVENTURE);
 			});
 		} else {
-			Vec3d pos = this.mainPlayer.getPos().add(this.config.spectatorSpawnOffset());
+			Vec3 pos = this.mainPlayer.position().add(this.config.spectatorSpawnOffset());
 			return acceptor.teleport(this.world, pos).thenRunForEach(player -> {
-				player.setYaw(this.mainPlayer.getYaw());
-				player.setPitch(this.mainPlayer.getPitch());
+				player.setYRot(this.mainPlayer.getYRot());
+				player.setXRot(this.mainPlayer.getXRot());
 
-				player.changeGameMode(GameMode.SPECTATOR);
+				player.setGameMode(GameType.SPECTATOR);
 			});
 		}
 	}
@@ -173,12 +173,12 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 	}
 
 	@Override
-	public EventResult onDamage(ServerPlayerEntity player, DamageSource source, float damage) {
+	public EventResult onDamage(ServerPlayer player, DamageSource source, float damage) {
 		return EventResult.DENY;
 	}
 
 	@Override
-	public EventResult onDeath(ServerPlayerEntity player, DamageSource source) {
+	public EventResult onDeath(ServerPlayer player, DamageSource source) {
 		if (player == this.mainPlayer) {
 			this.endGame();
 		}
@@ -186,7 +186,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 	}
 
 	@Override
-	public void onRemovePlayer(ServerPlayerEntity player) {
+	public void onRemovePlayer(ServerPlayer player) {
 		if (player == this.mainPlayer) {
 			this.gameSpace.close(GameCloseReason.FINISHED);
 		}
@@ -194,7 +194,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 
 	// Utilities
 	private void sendSound(SoundEvent sound, float pitch) {
-		this.gameSpace.getPlayers().playSound(sound, SoundCategory.PLAYERS, this.config.soundConfig().volume(), pitch);
+		this.gameSpace.getPlayers().playSound(sound, SoundSource.PLAYERS, this.config.soundConfig().volume(), pitch);
 	}
 
 	private void sendSound(SoundEvent sound) {
@@ -212,7 +212,7 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 		}
 
 		this.score += score;
-		this.mainPlayer.setExperienceLevel(this.score);
+		this.mainPlayer.setExperienceLevels(this.score);
 		this.bar.updateTitle();
 
 		int deltaY = this.lastPiece == null ? 0 : completedPiece.getDeltaY(this.lastPiece);
@@ -231,13 +231,13 @@ public class InfiniteParkourGame implements GameActivityEvents.Tick, GamePlayerE
 
 	private void endGame() {
 		this.ticksUntilClose = this.config.ticksUntilClose();
-		this.mainPlayer.changeGameMode(GameMode.SPECTATOR);
+		this.mainPlayer.setGameMode(GameType.SPECTATOR);
 
 		for (ParkourPiece piece : this.pieces) {
 			piece.placeGlass(this.world);
 		}
 
-		Text message = Text.translatable("text.infiniteparkour.reached_score", this.mainPlayer.getDisplayName(), this.score).formatted(Formatting.GOLD);
+		Component message = Component.translatable("text.infiniteparkour.reached_score", this.mainPlayer.getDisplayName(), this.score).withStyle(ChatFormatting.GOLD);
 		this.gameSpace.getPlayers().sendMessage(message);
 
 		this.sendSound(this.config.soundConfig().gameEnd());
